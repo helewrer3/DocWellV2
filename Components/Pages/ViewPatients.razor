@@ -1,0 +1,48 @@
+@page "/patients"
+@using DocWellV2.Data
+@using DocWellV2.Data.Models
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject AppDbContext AppDbContext;
+@rendermode InteractiveServer
+
+<PageTitle>View Patients</PageTitle>
+<h1>View Patients</h1>
+
+<div class="form-row">
+    <div class="form-group col-md-4">
+        <label>Filter By Name: </label>
+        <input type="search" @bind="_nameFilter" @bind:event="oninput"/>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <QuickGrid Class="table table-striped table-hover" Items="FilteredNames">
+        <PropertyColumn Title="Id" Property="arg => arg.Id" Sortable="true"/>
+        <PropertyColumn Title="Name" Property="arg => arg.Name" Sortable="true"/>
+        <PropertyColumn Title="Age (in years)" Property="arg => arg.Age" Sortable="true"/>
+        <PropertyColumn Title="Weight (in kg)" Property="arg => arg.Weight" Sortable="true"/>
+
+        <TemplateColumn Context="patient">
+            <a href="@($"patients/edit?id={patient.Id}")">Edit</a>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+<Paginator State="@_pagination" />
+
+<div class="page-size-chooser">
+    Items per page:
+    <select @bind="@_pagination.ItemsPerPage">
+        <option>5</option>
+        <option>10</option>
+        <option>20</option>
+        <option>50</option>
+    </select>
+</div>
+
+@code {
+    readonly PaginationState _pagination = new PaginationState { ItemsPerPage = 10 };
+    private string _nameFilter = string.Empty;
+    
+    private IQueryable<Patient> FilteredNames => AppDbContext.Patients.Where(m => m.Name!.Contains(_nameFilter));
+}
