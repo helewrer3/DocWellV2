@@ -8,18 +8,34 @@ public class PatientService(IDbContextFactory<AppDbContext> dbContextFactory)
 {
     private readonly IDbContextFactory<AppDbContext> _dbContextFactory = dbContextFactory;
 
-    public void AddPatient(Patient patient)
+    public Patient AddPatient(Patient patient)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
         dbContext.Patients.Add(patient);
         dbContext.SaveChanges();
+        return patient;
     }
 
     public List<Patient> GetPatientsByName(string name)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
-        //PostgreSQL dependent
-        var patients = dbContext.Patients.Where(p => EF.Functions.ILike(p.Name, $"%{name}%")).ToList();
+        var patients = dbContext.Patients.Where(p => p.Name.ToLower().Contains(name.ToLower())).ToList();
         return patients;
+    }
+
+    public Patient? GetPatientById(int id)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        var patient = dbContext.Patients.Find(id);
+        return patient;
+    }
+
+    public Patient UpdatePatient(Patient patient)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        dbContext.Attach(patient);
+        dbContext.Entry(patient).State = EntityState.Modified;
+        dbContext.SaveChanges();
+        return patient;
     }
 }

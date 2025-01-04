@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DocWellV2")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0a2290419f9b74363532f3a637c4a9d5303da87e")]
 [assembly: System.Reflection.AssemblyProductAttribute("DocWellV2")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DocWellV2")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

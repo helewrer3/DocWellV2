@@ -1,8 +1,10 @@
 @page "/add-visit"
 @using DocWellV2.Services
 @using DocWellV2.Data.Models
+@using DocWellV2.Utils
 @inject VisitService VisitService;
 @inject PatientService PatientService;
+@inject PrescriptionService PrescriptionService;
 @rendermode InteractiveServer
 
 <PageTitle>Add Visit</PageTitle>
@@ -14,24 +16,56 @@
 
 <EditForm OnValidSubmit="@HandleSubmit" Model="@_newVisit" FormName="AddVisitForm">
     <DataAnnotationsValidator />
-
-    <div class="form-row">
-        <div class="form-group col-md-4">
-            <label for="NameInput">Patient Name:</label>
-            <InputText id="NameInput" @bind-Value="@_newVisit.PatientName" @oninput="@FilterPatients" placeholder="Type to search..."></InputText>
-            @if (_filteredPatients.Any())
-            {
-                <ul class="dropdown-menu show" role="menu" @onclick:stopPropagation>
-                    @foreach (var option in _filteredPatients)
-                    {
-                        <li><button class="dropdown-item" type="button" @onclick="() => SelectPatient(option)">@option.Name</button></li>
-                    }
-                </ul>
-            }
-            <a href="@($"/add-patient")" class="mx-3 link-warning link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover">or add patient</a>
-        </div>
+    
+    <div class="form-group col-auto mt-2">
+        <label for="NameInput" class="form-label">Patient Name:</label>
+        <InputText class="form-control" id="NameInput" @bind-Value="@_newVisit.PatientName" @oninput="@FilterPatients" placeholder="Type to search..."></InputText>
+        @if (_filteredPatients.Any())
+        {
+            <ul class="dropdown-menu show" role="menu" @onclick:stopPropagation>
+                @foreach (var option in _filteredPatients)
+                {
+                    <li><button class="dropdown-item" type="button" @onclick="() => SelectPatient(option)">@option.Name</button></li>
+                }
+            </ul>
+        }
+        <a href="@($"/add-patient")" class="form-text link-warning link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover">or add patient</a>
+    </div>
+    
+    <div class="form-group col-auto mt-2">
+        <label for="DiagnosisInput" class="form-label">Patient's Diagnosis:</label>
+        <InputTextArea class="form-control" id="DiagnosisInput" @bind-Value="@_newVisit.Diagnosis" placeholder="Type your diagnosis..."></InputTextArea>
+    </div>
+    
+    <div class="form-group col-auto mt-2">
+        <label class="form-label">Medicines Diagnosed:</label>
         
+        @for(var j = 0; j < _newVisit.Medicines.Count; j++)
+        {
+            var localJ = j;
+            <div class="input-group">
+                <InputText class="form-control"  @bind-Value="@_newVisit.Medicines[localJ].Name" placeholder="Enter medicine name..."></InputText>
+                <span class="input-group-text">x</span>
+                <InputNumber class="form-control" @bind-Value="@_newVisit.Medicines[localJ].DailyFrequency" placeholder="Enter daily frequency..."></InputNumber>
+                <span class="input-group-text">x</span>
+                @for(var i = 0; i < _newVisit.Medicines[localJ].WeeklyFrequency.Count; i++)
+                {
+                    var localI = i;
+                    <button class="btn btn-outline-primary @(_newVisit.Medicines[localJ].WeeklyFrequency[localI] == 0 ? "" : "active")" type="button" @onclick="() => _newVisit.ToggleMedicineWeekDay(localJ, localI)">@_newVisit.Medicines[localJ].GetWeekDay(i)</button>
+                }
+            </div>
+        }
         
+        <button class="form-control btn btn-primary mt-2" type="button" @onclick="_newVisit.AddNewMedicineEntry">+</button>
+        @if (_newVisit.Medicines.Any())
+        {
+            <button class="form-control btn btn-danger mt-2" type="button" @onclick="_newVisit.RemoveLastMedicineEntry">-</button>
+        }
+    </div>
+    
+    <div class="form-group col-auto mt-2">
+        <label for="NotesInput" class="form-label">Patient's Diagnosis:</label>
+        <InputTextArea class="form-control" id="NotesInput" @bind-Value="@_newVisit.Notes" placeholder="Any additional notes or tests..."></InputTextArea>
     </div>
 
     <div class="form-group mt-3">
@@ -58,6 +92,7 @@
     private void SelectPatient(Patient patient)
     {
         _newVisit.PatientName = patient.Name;
+        _newVisit.Patient = patient;
         _filteredPatients = [];
     }
     
@@ -66,11 +101,18 @@
         DisplayAlert = true;
         try
         {
-            // var newVisit = (Visit)editContext.Model;
-            // newVisit.CreatedDate = DateTime.UtcNow;
-            // VisitService.AddVisit(newVisit);
+            var newVisit = (NewVisit)editContext.Model;
+            var prescription = PrescriptionService.AddPrescription(newVisit.Diagnosis, newVisit.Medicines, newVisit.Notes);
+            var visit = new Visit
+            {
+                Patient = newVisit.Patient!,
+                Prescription = prescription,
+                CreatedDate = DateTime.UtcNow,
+                VisitDate = DateTime.UtcNow
+            };
+            VisitService.AddVisit(visit);
             AlertClass = "alert-success";
-            AlertMessage = "Patient record added successfully.";
+            AlertMessage = "Visit record added successfully.";
         }
         catch (Exception e)
         {
@@ -78,10 +120,5 @@
             AlertMessage = e.Message;
             throw;
         }
-    }
-    
-    public class NewVisit
-    {
-        public string PatientName = string.Empty;
     }
 }

@@ -40,12 +40,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BZGRWaXNpdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/helewrer3/Documents/dotnet/DocWellV2/Components/Pages/EditPatient.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FZGl0UGF0aWVudC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/helewrer3/Documents/dotnet/DocWellV2/Components/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ib21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/helewrer3/Documents/dotnet/DocWellV2/Components/Pages/ViewPatients.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9WaWV3UGF0aWVudHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/helewrer3/Documents/dotnet/DocWellV2/Components/Pages/ViewVisits.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9WaWV3VmlzaXRzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/helewrer3/Documents/dotnet/DocWellV2/Components/Routes.razor]

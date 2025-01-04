@@ -1,0 +1,56 @@
+@page "/visits"
+@using DocWellV2.Data
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext AppDbContext;
+@rendermode InteractiveServer
+
+<PageTitle>View Visits</PageTitle>
+<h1>View Visits</h1>
+
+<div class="table-responsive">
+    <QuickGrid Class="table table-striped table-hover" Items="@AppDbContext.Visits.Include(v => v.Patient).Include(v => v.Prescription)">
+        <PropertyColumn Title="Id" Property="arg => arg.Id"/>
+        <PropertyColumn Title="Patient Name" Property="arg => arg.Patient.Name"/>
+        <PropertyColumn Title="Diagnosis" Property="arg => arg.Prescription.Diagnosis"/>
+        <PropertyColumn Title="Medicines" Property="arg => BeautifyMedicines(arg.Prescription.Medicines)"/>
+        <PropertyColumn Title="Notes" Property="arg => arg.Prescription.Note"/>
+        <PropertyColumn Title="Visit Date" Property="arg => arg.VisitDate" Format="dd-MM-yyyy"/>
+    </QuickGrid>
+</div>
+
+<Paginator State="@_pagination" />
+
+<div class="page-size-chooser">
+    Items per page:
+    <select @bind="@_pagination.ItemsPerPage">
+        <option>5</option>
+        <option>10</option>
+        <option>20</option>
+        <option>50</option>
+    </select>
+</div>
+
+@code {
+    readonly PaginationState _pagination = new PaginationState { ItemsPerPage = 10 };
+
+    private string BeautifyMedicines(string medicines)
+    {
+        var ans = string.Empty;
+        if (medicines == string.Empty) return ans;
+        string[] weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        foreach (var medicine in medicines.Split(';'))
+        {
+            var splitMedicine = medicine.Split('|');
+            if (splitMedicine.Length == 0 || splitMedicine[0] == string.Empty) continue;
+            ans += $"{splitMedicine[0]} | {splitMedicine[1]} time a day | on ";
+            var days = splitMedicine[2].Split(',');
+            for (var i = 0; i < days.Length; i++)
+            {
+                if (days[i] == "1") ans += $"{weekDays[i]} ";
+            }
+            ans += "\n";
+        }
+        return ans;
+    }
+}

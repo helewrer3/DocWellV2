@@ -1,0 +1,79 @@
+@page "/patients/{PatientId:int}"
+@using DocWellV2.Data.Models
+@using DocWellV2.Services
+@inject PatientService PatientService;
+@rendermode InteractiveServer
+
+<PageTitle>Edit Patient</PageTitle>
+
+<h1>Edit Patient</h1>
+
+<button class="btn btn-primary"><a class="link-light link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="@($"patients")">Back</a></button>
+
+@if (_patient != null)
+{
+    @if (DisplayAlert) 
+    {
+        <div class="alert @AlertClass fade-in" role="alert">@AlertMessage</div>
+    }
+
+    <EditForm OnValidSubmit="@HandleSubmit" Model="@_patient" FormName="AddPatientForm">
+        <DataAnnotationsValidator />
+        <div class="form-group col-auto mt-2">
+            <label for="NameInput" class="form-label">Name:</label>
+            <InputText id="NameInput" class="form-control" @bind-Value="@_patient.Name" placeholder="Enter patient's name" />
+        </div>
+
+        <div class="form-group col-auto mt-2">
+            <label for="AgeInput" class="form-label">Age:</label>
+            <InputNumber id="AgeInput" class="form-control" @bind-Value="@_patient.Age" placeholder="Enter patient's age" />
+        </div>
+
+        <div class="form-group col-auto mt-2">
+            <label for="WeightInput" class="form-label">Weight:</label>
+            <InputNumber id="WeightInput" class="form-control" @bind-Value="@_patient.Weight" placeholder="Enter patient's weight" />
+        </div>
+
+        <div class="form-group mt-3">
+            <button type="submit" class="btn btn-primary">Add Patient</button>
+        </div>
+    </EditForm>
+}
+else
+{
+    <div class="alert alert-danger fade-in" role="alert">Patient not found in the database.</div>
+}
+
+@code {
+    [Parameter] public int PatientId { get; set; }
+    private Patient? _patient = null;
+    
+    private string? AlertMessage { get; set; }
+    private string? AlertClass { get; set; }
+    private bool DisplayAlert { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _patient = PatientService.GetPatientById(PatientId) ?? null;
+    }
+    
+    private void HandleSubmit(EditContext editContext)
+    {
+        DisplayAlert = true;
+        try
+        {
+            var newPatient = (Patient)editContext.Model;
+            newPatient.CreatedDate = DateTime.UtcNow;
+            PatientService.UpdatePatient(_patient!);
+            AlertClass = "alert-success";
+            AlertMessage = "Patient record added successfully.";
+        }
+        catch (Exception e)
+        {
+            AlertClass = "alert-danger";
+            AlertMessage = e.Message;
+            throw;
+        }
+    }
+}

@@ -13,20 +13,19 @@
 
 <EditForm OnValidSubmit="@HandleSubmit" Model="@_patient" FormName="AddPatientForm">
     <DataAnnotationsValidator />
-
-    <div class="form-row">
-        <div class="form-group col-md-4">
-            <label for="NameInput">Name:</label>
-            <InputText id="NameInput" class="form-control" @bind-Value="@_patient.Name" placeholder="Enter patient's name" />
-        </div>
-        <div class="form-group col-md-4">
-            <label for="AgeInput">Age:</label>
-            <InputNumber id="AgeInput" class="form-control" @bind-Value="@_patient.Age" placeholder="Enter patient's age" />
-        </div>
-        <div class="form-group col-md-4">
-            <label for="WeightInput">Weight:</label>
-            <InputNumber id="WeightInput" class="form-control" @bind-Value="@_patient.Weight" placeholder="Enter patient's weight" />
-        </div>
+    <div class="form-group col-auto mt-2">
+        <label for="NameInput" class="form-label">Name:</label>
+        <InputText id="NameInput" class="form-control" @bind-Value="@_patient.Name" placeholder="Enter patient's name" />
+    </div>
+    
+    <div class="form-group col-auto mt-2">
+        <label for="AgeInput" class="form-label">Age:</label>
+        <InputNumber id="AgeInput" class="form-control" @bind-Value="@_patient.Age" placeholder="Enter patient's age" />
+    </div>
+    
+    <div class="form-group col-auto mt-2">
+        <label for="WeightInput" class="form-label">Weight:</label>
+        <InputNumber id="WeightInput" class="form-control" @bind-Value="@_patient.Weight" placeholder="Enter patient's weight" />
     </div>
     
     <div class="form-group mt-3">

@@ -7,7 +7,7 @@ public class Prescription
     [Key]
     public int Id { get; set; }
     public string Diagnosis { get; set; }
-    public string? Medicines { get; set; }
-    public string? Note { get; set; }
+    public string Medicines { get; set; } = string.Empty;
+    public string Note { get; set; } = string.Empty;
     public DateTime CreatedDate { get; set; }
 }

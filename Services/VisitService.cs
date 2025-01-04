@@ -8,10 +8,13 @@ public class VisitService(IDbContextFactory<AppDbContext> dbContextFactory)
 {
     private readonly IDbContextFactory<AppDbContext> _dbContextFactory = dbContextFactory;
 
-    public void AddVisit(Visit visit)
+    public Visit AddVisit(Visit visit)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
+        dbContext.Attach(visit.Patient);
+        dbContext.Attach(visit.Prescription);
         dbContext.Visits.Add(visit);
         dbContext.SaveChanges();
+        return visit;
     }
 }

@@ -13,6 +13,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddQuickGridEntityFrameworkAdapter();
 builder.Services.AddTransient<PatientService>();
+builder.Services.AddTransient<PrescriptionService>();
 builder.Services.AddTransient<VisitService>();
 builder.Services.AddDbContextFactory<AppDbContext>((DbContextOptionsBuilder optionsBuilder) => 
     optionsBuilder.UseNpgsql(connectionString));

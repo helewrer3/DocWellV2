@@ -23,7 +23,7 @@
         <PropertyColumn Title="Weight (in kg)" Property="arg => arg.Weight" Sortable="true"/>
 
         <TemplateColumn Context="patient">
-            <a href="@($"patients/edit?id={patient.Id}")">Edit</a>
+            <a class="link-info link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="@($"patients/{patient.Id}")">Edit</a>
         </TemplateColumn>
     </QuickGrid>
 </div>
