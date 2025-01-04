@@ -4,7 +4,7 @@
 ## Get latest from `dotnet new gitignore`
 
 # Prod App Settings
-appsettings.json
+appsettings.KusumClinic.json
 
 # dotenv files
 .env
