@@ -1,48 +1,75 @@
 @page "/patients"
-@using DocWellV2.Data
-@using DocWellV2.Data.Models
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.Extensions.Options
+@inject IOptions<SecretManager> SecretManager;
+@inject ProtectedSessionStorage ProtectedSessionStore;
 @inject AppDbContext AppDbContext;
 @rendermode InteractiveServer
 
 <PageTitle>View Patients</PageTitle>
-<h1>View Patients</h1>
 
-<div class="form-row">
-    <div class="form-group col-md-4">
-        <label>Filter By Name: </label>
-        <input type="search" @bind="_nameFilter" @bind:event="oninput"/>
+@if (_isAuth)
+{
+    <h1>View Patients</h1>
+
+    <div class="form-row">
+        <div class="form-group col-md-4">
+            <label>Filter By Name: </label>
+            <input type="search" @bind="_nameFilter" @bind:event="oninput"/>
+        </div>
     </div>
-</div>
 
-<div class="table-responsive">
-    <QuickGrid Class="table table-striped table-hover" Items="FilteredNames">
-        <PropertyColumn Title="Id" Property="arg => arg.Id" Sortable="true"/>
-        <PropertyColumn Title="Name" Property="arg => arg.Name" Sortable="true"/>
-        <PropertyColumn Title="Age (in years)" Property="arg => arg.Age" Sortable="true"/>
-        <PropertyColumn Title="Weight (in kg)" Property="arg => arg.Weight" Sortable="true"/>
+    <div class="table-responsive">
+        <QuickGrid Class="table table-striped table-hover" Items="FilteredNames">
+            <PropertyColumn Title="Id" Property="arg => arg.Id" Sortable="true"/>
+            <PropertyColumn Title="Name" Property="arg => arg.Name" Sortable="true"/>
+            <PropertyColumn Title="Age (in years)" Property="arg => arg.Age" Sortable="true"/>
+            <PropertyColumn Title="Weight (in kg)" Property="arg => arg.Weight" Sortable="true"/>
 
-        <TemplateColumn Context="patient">
-            <a class="link-info link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="@($"patients/{patient.Id}")">Edit</a>
-        </TemplateColumn>
-    </QuickGrid>
-</div>
+            <TemplateColumn Context="patient">
+                <a class="link-info link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="@($"patients/{patient.Id}")">Edit</a>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
 
-<Paginator State="@_pagination" />
+    <Paginator State="@_pagination" />
 
-<div class="page-size-chooser">
-    Items per page:
-    <select @bind="@_pagination.ItemsPerPage">
-        <option>5</option>
-        <option>10</option>
-        <option>20</option>
-        <option>50</option>
-    </select>
-</div>
+    <div class="page-size-chooser">
+        Items per page:
+        <select @bind="@_pagination.ItemsPerPage">
+            <option>5</option>
+            <option>10</option>
+            <option>20</option>
+            <option>50</option>
+        </select>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger fade-in" role="alert">Login first please.</div>
+}
 
 @code {
+    private bool _isAuth = false;
     readonly PaginationState _pagination = new PaginationState { ItemsPerPage = 10 };
     private string _nameFilter = string.Empty;
     
     private IQueryable<Patient> FilteredNames => AppDbContext.Patients.Where(m => m.Name!.Contains(_nameFilter));
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var result = await ProtectedSessionStore.GetAsync<string>("password");
+            if (result.Success)
+            {
+                var ans = result.Value!;
+                ans = ans.Remove(ans.Length - 1);
+                ans = ans.Remove(0, 1);
+                _isAuth |= SecretManager.Value.VerifyPassword(ans);
+                StateHasChanged();
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
 }

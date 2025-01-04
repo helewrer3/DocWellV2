@@ -1,6 +1,7 @@
 using DocWellV2.Components;
 using DocWellV2.Data;
 using DocWellV2.Services;
+using DocWellV2.Utils;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddTransient<PrescriptionService>();
 builder.Services.AddTransient<VisitService>();
 builder.Services.AddDbContextFactory<AppDbContext>((DbContextOptionsBuilder optionsBuilder) => 
     optionsBuilder.UseNpgsql(connectionString));
+builder.Services.Configure<SecretManager>(builder.Configuration.GetSection("Secrets"));
 
 var app = builder.Build();
 

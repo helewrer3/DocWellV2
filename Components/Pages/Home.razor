@@ -1,7 +1,72 @@
 ﻿@page "/"
+@using System.Diagnostics
+@using System.Text.Json
+@using Microsoft.Extensions.Options
+@rendermode InteractiveServer
+@inject IOptions<SecretManager> SecretManager;
+@inject ProtectedSessionStorage ProtectedSessionStore;
 
 <PageTitle>Home</PageTitle>
 
-<h1>Dashboard</h1>
+@if (_isAuth)
+{
+    <h1>Home</h1>
+}
+else
+{
+    @if (_displayAlert) {
+        <div class="alert alert-danger fade-in" role="alert">Password is incorrect.</div>
+    }
+    <EditForm OnValidSubmit="@HandleSubmit" Model="@_loginForm" FormName="LoginForm">
+        <DataAnnotationsValidator />
+        <div class="form-group col-auto mt-2">
+            <label for="PasswordInput" class="form-label">Login:</label>
+            <InputText id="PasswordInput" class="form-control" @bind-Value="@_loginForm.Password" placeholder="Enter password..." />
+        </div>
 
-Coming soon...
+        <div class="form-group mt-3">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </EditForm>
+}
+
+@code{
+    private bool _isAuth = false;
+    private bool _displayAlert = false;
+    readonly LoginForm _loginForm = new LoginForm();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var result = await ProtectedSessionStore.GetAsync<string>("password");
+            if (result.Success)
+            {
+                var ans = result.Value!;
+                ans = ans.Remove(ans.Length - 1);
+                ans = ans.Remove(0, 1);
+                _isAuth |= SecretManager.Value.VerifyPassword(ans);
+                StateHasChanged();
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    private void HandleSubmit(EditContext editContext)
+    {
+        var loginForm = (LoginForm)editContext.Model;
+        _isAuth = SecretManager.Value.VerifyPassword(SecretManager.Value.GetSha256Hash(loginForm.Password));
+        if (_isAuth) _ = SaveSession(loginForm.Password);
+        _displayAlert = !_isAuth;
+    }
+
+    private async Task SaveSession(string password)
+    {
+        await ProtectedSessionStore.SetAsync("password", JsonSerializer.Serialize(SecretManager.Value.GetSha256Hash(password)));
+    }
+    
+    public class LoginForm
+    {
+        public string Password { get; set; }
+    }
+}

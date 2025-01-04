@@ -1,37 +1,48 @@
 @page "/visits"
-@using DocWellV2.Data
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
 @inject AppDbContext AppDbContext;
+@inject IOptions<SecretManager> SecretManager;
+@inject ProtectedSessionStorage ProtectedSessionStore;
 @rendermode InteractiveServer
 
 <PageTitle>View Visits</PageTitle>
-<h1>View Visits</h1>
 
-<div class="table-responsive">
-    <QuickGrid Class="table table-striped table-hover" Items="@AppDbContext.Visits.Include(v => v.Patient).Include(v => v.Prescription)">
-        <PropertyColumn Title="Id" Property="arg => arg.Id"/>
-        <PropertyColumn Title="Patient Name" Property="arg => arg.Patient.Name"/>
-        <PropertyColumn Title="Diagnosis" Property="arg => arg.Prescription.Diagnosis"/>
-        <PropertyColumn Title="Medicines" Property="arg => BeautifyMedicines(arg.Prescription.Medicines)"/>
-        <PropertyColumn Title="Notes" Property="arg => arg.Prescription.Note"/>
-        <PropertyColumn Title="Visit Date" Property="arg => arg.VisitDate" Format="dd-MM-yyyy"/>
-    </QuickGrid>
-</div>
+@if (_isAuth)
+{
+    <h1>View Visits</h1>
 
-<Paginator State="@_pagination" />
+    <div class="table-responsive">
+        <QuickGrid Class="table table-striped table-hover" Items="@AppDbContext.Visits.Include(v => v.Patient).Include(v => v.Prescription)">
+            <PropertyColumn Title="Id" Property="arg => arg.Id"/>
+            <PropertyColumn Title="Patient Name" Property="arg => arg.Patient.Name"/>
+            <PropertyColumn Title="Diagnosis" Property="arg => arg.Prescription.Diagnosis"/>
+            <PropertyColumn Title="Medicines" Property="arg => BeautifyMedicines(arg.Prescription.Medicines)"/>
+            <PropertyColumn Title="Notes" Property="arg => arg.Prescription.Note"/>
+            <PropertyColumn Title="Visit Date" Property="arg => arg.VisitDate" Format="dd-MM-yyyy"/>
+        </QuickGrid>
+    </div>
 
-<div class="page-size-chooser">
-    Items per page:
-    <select @bind="@_pagination.ItemsPerPage">
-        <option>5</option>
-        <option>10</option>
-        <option>20</option>
-        <option>50</option>
-    </select>
-</div>
+    <Paginator State="@_pagination" />
+
+    <div class="page-size-chooser">
+        Items per page:
+        <select @bind="@_pagination.ItemsPerPage">
+            <option>5</option>
+            <option>10</option>
+            <option>20</option>
+            <option>50</option>
+        </select>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger fade-in" role="alert">Login first please.</div>
+}
 
 @code {
+    private bool _isAuth = false;
     readonly PaginationState _pagination = new PaginationState { ItemsPerPage = 10 };
 
     private string BeautifyMedicines(string medicines)
@@ -52,5 +63,22 @@
             ans += "\n";
         }
         return ans;
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var result = await ProtectedSessionStore.GetAsync<string>("password");
+            if (result.Success)
+            {
+                var ans = result.Value!;
+                ans = ans.Remove(ans.Length - 1);
+                ans = ans.Remove(0, 1);
+                _isAuth |= SecretManager.Value.VerifyPassword(ans);
+                StateHasChanged();
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
     }
 }
